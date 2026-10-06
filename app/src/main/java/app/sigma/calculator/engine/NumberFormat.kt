@@ -18,7 +18,8 @@ fun formatNumber(value: Double): String {
         val rounded = BigDecimal(v).round(MathContext(12)).stripTrailingZeros().toPlainString()
         groupThousands(rounded)
     }
-    return text.replaceFirst("-", "−")
+    // Use a proper minus sign for negative numbers (but not inside an exponent like 1.5e-10).
+    return if (text.startsWith("-")) "−" + text.drop(1) else text
 }
 
 private fun scientific(v: Double): String =
