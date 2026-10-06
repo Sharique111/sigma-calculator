@@ -26,10 +26,16 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Build the APK
+      - name: Test the maths and build the APK
         run: |
-          echo "Android SDK: $ANDROID_HOME"
-          gradle assembleRelease --no-daemon --stacktrace
+          set -o pipefail
+          gradle testReleaseUnitTest assembleRelease --no-daemon 2>&1 | tee build.log
+
+      - name: Show what went wrong
+        if: failure()
+        run: |
+          msg=$( { grep -E "^e: " build.log; grep -A6 "What went wrong" build.log; grep -B1 -A4 " FAILED$" build.log; } | head -60 | sed 's/%/%25/g' | sed ':a;N;$!ba;s/\n/%0A/g')
+          echo "::error title=Build failed::${msg}"
 
       - name: Name the APK
         run: cp app/build/outputs/apk/release/app-release.apk Sigma-Calculator.apk
@@ -43,8 +49,8 @@ jobs:
       - name: Publish a download on the Releases page
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.${{ github.run_number }}
-          name: Sigma Calculator 1.0.${{ github.run_number }}
+          tag_name: v2.0.${{ github.run_number }}
+          name: Sigma Calculator 2.0.${{ github.run_number }} (Kotlin)
           files: Sigma-Calculator.apk
           body: |
             Open this page on your Android phone, tap **Sigma-Calculator.apk** to download it, then open the file to install.

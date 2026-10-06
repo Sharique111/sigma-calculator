@@ -13,4 +13,4 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "SigmaCalculator"
-include ':app'
+include(":app")
