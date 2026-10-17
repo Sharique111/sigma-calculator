@@ -14,12 +14,12 @@ val signForPlay = project.hasProperty("playUpload") && uploadKeystore != null
 
 android {
     namespace = "app.sigma.calculator"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "app.sigma.calculator"
         minSdk = 24          // Android 7.0 and newer
-        targetSdk = 35
+        targetSdk = 36     // Android 16, required by Google Play
         versionCode = buildNumber
         versionName = "2.0.$buildNumber"
     }
@@ -43,7 +43,10 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // Shrink the app: removes unused code from libraries (about 4x smaller download).
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             // The APK you install yourself uses the "sigma" key; the Google Play bundle uses "upload".
             signingConfig = signingConfigs.getByName(if (signForPlay) "upload" else "sigma")
         }
