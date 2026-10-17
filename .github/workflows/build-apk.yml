@@ -7,13 +7,13 @@ on:
 
 permissions:
   contents: write
+  id-token: write   # lets GitHub prove its identity to Google (no key file needed)
 
 jobs:
   build:
     runs-on: ubuntu-latest
     env:
       HAS_UPLOAD_KEY: ${{ secrets.UPLOAD_KEYSTORE_BASE64 != '' }}
-      HAS_PLAY_ACCESS: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON != '' }}
     steps:
       - name: Get the code
         uses: actions/checkout@v5
@@ -50,11 +50,19 @@ jobs:
           cp app/build/outputs/bundle/release/app-release.aab Sigma-Calculator-GooglePlay.aab
           rm -f "$RUNNER_TEMP/upload.jks"
 
+      - name: Sign in to Google (keyless, Workload Identity Federation)
+        id: google
+        if: env.HAS_UPLOAD_KEY == 'true'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/1028903667508/locations/global/workloadIdentityPools/github/providers/sigma-repo
+          service_account: github-upload@sigma-play.iam.gserviceaccount.com
+
       - name: Upload to Google Play (internal testing)
-        if: env.HAS_UPLOAD_KEY == 'true' && env.HAS_PLAY_ACCESS == 'true'
+        if: env.HAS_UPLOAD_KEY == 'true'
         uses: r0adkll/upload-google-play@v1
         with:
-          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          serviceAccountJson: ${{ steps.google.outputs.credentials_file_path }}
           packageName: app.sigma.calculator
           releaseFiles: Sigma-Calculator-GooglePlay.aab
           track: internal

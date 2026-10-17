@@ -65,6 +65,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true // gives the code BuildConfig.VERSION_NAME
     }
 
     lint {

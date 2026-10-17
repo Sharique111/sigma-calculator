@@ -54,6 +54,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.sigma.calculator.BuildConfig
 import app.sigma.calculator.CalculatorViewModel
 import app.sigma.calculator.HARDWARE_KEYS
 import app.sigma.calculator.HistoryEntry
@@ -139,6 +140,7 @@ private fun TopBar(
             Text("σ", color = colors.onAccent, fontFamily = PlexMono, fontWeight = FontWeight.Medium, fontSize = 18.sp)
         }
         Text("Sigma", color = colors.text, fontFamily = Figtree, fontWeight = FontWeight.Bold, fontSize = 19.sp)
+        Text("v" + BuildConfig.VERSION_NAME, color = colors.muted, fontFamily = PlexMono, fontSize = 12.sp)
         Spacer(Modifier.weight(1f))
         Chip(if (showingHistory) "Keypad" else "History", onToggleHistory)
         Chip(if (dark) "Light" else "Dark", onToggleTheme)

@@ -60,7 +60,8 @@ To work on it yourself, install [Android Studio](https://developer.android.com/s
   for installing directly on your own phone.
 - **Google Play bundle (.aab)** is signed with a private upload key that lives only in GitHub's encrypted
   secrets (`UPLOAD_KEYSTORE_BASE64`, `UPLOAD_KEYSTORE_PASSWORD`). It is never committed to this repository.
-- When `PLAY_SERVICE_ACCOUNT_JSON` is set, each build also uploads the bundle to the Play Console
-  **internal testing** track.
+- Each build also uploads the bundle to the Play Console **internal testing** track. GitHub signs in to
+  Google with Workload Identity Federation (no key file): only this repository can act as
+  `github-upload@sigma-play.iam.gserviceaccount.com`, which has release access in Play Console.
 
 The earlier web-based version of the app is still available as release v1.0.2.
