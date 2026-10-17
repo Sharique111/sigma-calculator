@@ -48,10 +48,12 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.sigma.calculator.BuildConfig
@@ -181,11 +183,6 @@ private fun Display(vm: CalculatorViewModel, modifier: Modifier) {
         else -> vm.preview
     }
     val mainLine = if (vm.evaluated) vm.resultText else vm.expression
-    val mainSize = when {
-        mainLine.length > 20 -> 28.sp
-        mainLine.length > 13 -> 36.sp
-        else -> 46.sp
-    }
 
     Column(
         modifier = modifier
@@ -205,13 +202,14 @@ private fun Display(vm: CalculatorViewModel, modifier: Modifier) {
                 color = if (showingError) colors.danger else colors.muted,
             ),
         )
-        ScrollingLine(
+        FittingLine(
             text = mainLine.ifEmpty { "0" },
             style = TextStyle(
                 fontFamily = PlexMono,
-                fontSize = mainSize,
                 color = if (mainLine.isEmpty()) colors.muted else colors.text,
             ),
+            maxSize = 48.sp,
+            minSize = 22.sp,
         )
     }
 }
@@ -231,6 +229,34 @@ private fun ModeTag(mode: AngleMode) {
             .background(colors.accentSoft)
             .padding(horizontal = 8.dp, vertical = 3.dp),
     )
+}
+
+/**
+ * The big answer line. Shrinks the text step by step until the whole number fits on screen,
+ * so a result like 1.74818802701 is never shown with its first digit cut off. Only text that
+ * is still too long at the smallest size scrolls sideways.
+ */
+@Composable
+private fun FittingLine(text: String, style: TextStyle, maxSize: TextUnit, minSize: TextUnit) {
+    val measurer = rememberTextMeasurer()
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val available = constraints.maxWidth
+        val size = remember(text, available, style) {
+            var candidate = maxSize.value
+            while (candidate > minSize.value) {
+                val width = measurer.measure(
+                    text = text,
+                    style = style.copy(fontSize = candidate.sp),
+                    softWrap = false,
+                    maxLines = 1,
+                ).size.width
+                if (width <= available) break
+                candidate -= 2f
+            }
+            maxOf(candidate, minSize.value).sp
+        }
+        ScrollingLine(text, style.copy(fontSize = size))
+    }
 }
 
 /** One right-aligned line. If it gets too long, it scrolls sideways and keeps the end in view. */
