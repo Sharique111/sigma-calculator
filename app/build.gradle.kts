@@ -7,6 +7,11 @@ plugins {
 // Each GitHub build gets a higher version number, so new APKs install over old ones.
 val buildNumber = (System.getenv("GITHUB_RUN_NUMBER") ?: "1").toInt()
 
+// Google Play builds are signed with the private upload key, which GitHub passes in from its
+// encrypted secrets. It is never stored in this repository. Run with -PplayUpload to use it.
+val uploadKeystore: String? = System.getenv("UPLOAD_KEYSTORE_FILE")
+val signForPlay = project.hasProperty("playUpload") && uploadKeystore != null
+
 android {
     namespace = "app.sigma.calculator"
     compileSdk = 35
@@ -26,12 +31,21 @@ android {
             keyAlias = "sigma"
             keyPassword = "sigmacalc"
         }
+        if (uploadKeystore != null) {
+            create("upload") {
+                storeFile = file(uploadKeystore)
+                storePassword = System.getenv("UPLOAD_KEYSTORE_PASSWORD")
+                keyAlias = "upload"
+                keyPassword = System.getenv("UPLOAD_KEYSTORE_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("sigma")
+            // The APK you install yourself uses the "sigma" key; the Google Play bundle uses "upload".
+            signingConfig = signingConfigs.getByName(if (signForPlay) "upload" else "sigma")
         }
         debug {
             signingConfig = signingConfigs.getByName("sigma")

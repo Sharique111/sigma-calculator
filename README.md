@@ -54,7 +54,13 @@ it runs the maths tests, builds a signed APK, and publishes it as a new release.
 To work on it yourself, install [Android Studio](https://developer.android.com/studio), choose
 **File → Open**, select this folder, and press **Run** to start it on an emulator or your phone.
 
-The signing key's password is in `app/build.gradle.kts`. That's fine for a personal app you install
-yourself. Before publishing on Google Play, create a new private key and keep it out of the repository.
+### Signing
+
+- **APK on the Releases page** is signed with `keystore/sigma.keystore` (password in `app/build.gradle.kts`),
+  for installing directly on your own phone.
+- **Google Play bundle (.aab)** is signed with a private upload key that lives only in GitHub's encrypted
+  secrets (`UPLOAD_KEYSTORE_BASE64`, `UPLOAD_KEYSTORE_PASSWORD`). It is never committed to this repository.
+- When `PLAY_SERVICE_ACCOUNT_JSON` is set, each build also uploads the bundle to the Play Console
+  **internal testing** track.
 
 The earlier web-based version of the app is still available as release v1.0.2.
